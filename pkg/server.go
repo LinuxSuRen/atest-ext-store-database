@@ -30,6 +30,13 @@ type databaseExtension struct {
 
 type RemoteServer interface {
 	remote.LoaderServer
+	UIExtension
+}
+
+type UIExtension interface {
+	GetPageOfJS(ctx context.Context, in *server.SimpleName) (*server.CommonResult, error)
+	GetPageOfCSS(ctx context.Context, in *server.SimpleName) (*server.CommonResult, error)
+	GetMenus(ctx context.Context, empty *server.Empty) (*server.MenuList, error)
 }
 
 func NewRemoteServer() (server RemoteServer, err error) {
