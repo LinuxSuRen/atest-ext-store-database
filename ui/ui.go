@@ -4,10 +4,10 @@ import (
 	_ "embed"
 )
 
-//go:embed dist/atest-vault-ui.umd.js
+//go:embed dist/atest-ext-store-database.umd.js
 var js string
 
-//go:embed dist/atest-vault-ui.css
+//go:embed dist/atest-ext-store-database.css
 var css string
 
 func GetJS() string {
