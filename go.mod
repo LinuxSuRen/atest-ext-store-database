@@ -40,7 +40,7 @@ require (
 	github.com/jhump/protoreflect v1.15.3 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/k0kubun/go-ansi v0.0.0-20180517002512-3bf9e2903213 // indirect
-	github.com/linuxsuren/api-testing v0.0.21-0.20250808130908-4ac2eaa67def // indirect
+	github.com/linuxsuren/api-testing v0.0.21-0.20250810080538-f8547ca9e216 // indirect
 	github.com/linuxsuren/go-fake-runtime v0.0.5 // indirect
 	github.com/linuxsuren/go-service v0.0.0-20231225060426-efabcd3a5161 // indirect
 	github.com/linuxsuren/http-downloader v0.0.99 // indirect
