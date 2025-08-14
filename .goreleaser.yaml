@@ -4,11 +4,12 @@ before:
   hooks:
     # You may remove this if you don't use go modules.
     - go mod tidy
+    - make build-ui
 builds:
   - env:
       - CGO_ENABLED=0
-    id: atest-store-orm
-    binary: atest-store-orm
+    id: atest-store-database
+    binary: atest-store-database
     goos:
       - linux
       - windows
@@ -22,7 +23,7 @@ builds:
 archives:
   - name_template: "{{ .Binary }}-{{ .Os }}-{{ .Arch }}"
     builds:
-      - atest-store-orm
+      - atest-store-database
     format_overrides:
       - goos: windows
         format: zip

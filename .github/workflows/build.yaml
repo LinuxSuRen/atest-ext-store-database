@@ -10,18 +10,11 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.22.x
+          go-version: 1.24.x
       - uses: actions/checkout@v3.0.0
       - name: Unit Test
         run: |
           make test
-      - name: Report
-        if: github.actor == 'linuxsuren'
-        env:
-          CODACY_PROJECT_TOKEN: ${{ secrets.CODACY_PROJECT_TOKEN }}
-        run: |
-          bash <(curl -Ls https://coverage.codacy.com/get.sh) report --partial --force-coverage-parser go -r coverage.out
-          bash <(curl -Ls https://coverage.codacy.com/get.sh) final
 
   Build:
     runs-on: ubuntu-22.04
@@ -29,7 +22,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v3
         with:
-          go-version: 1.22.x
+          go-version: 1.24.x
       - uses: actions/checkout@v3.0.0
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v6
