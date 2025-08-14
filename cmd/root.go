@@ -16,51 +16,34 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
-	"net"
-
-	"github.com/linuxsuren/api-testing/pkg/testing/remote"
+	ext "github.com/linuxsuren/api-testing/pkg/extension"
 	"github.com/linuxsuren/atest-ext-store-database/pkg"
 	"github.com/spf13/cobra"
-	"google.golang.org/grpc"
 )
 
 func NewRootCmd() (cmd *cobra.Command) {
-	opt := &option{}
+	opt := &option{
+		Extension: ext.NewExtension("orm", "store", 4076),
+	}
 	cmd = &cobra.Command{
 		Use:  "atest-store-database",
 		RunE: opt.runE,
 	}
-	flags := cmd.Flags()
-	flags.IntVarP(&opt.port, "port", "p", 7073, "The port of gRPC server")
+	opt.AddFlags(cmd.Flags())
 	return
 }
 
-func (o *option) runE(cmd *cobra.Command, args []string) (err error) {
-	var removeServer pkg.RemoteServer
-	if removeServer, err = pkg.NewRemoteServer(); err != nil {
-		return
-	}
-
-	var lis net.Listener
-	lis, err = net.Listen("tcp", fmt.Sprintf(":%d", o.port))
-	if err != nil {
-		return
-	}
-
-	gRPCServer := grpc.NewServer()
-	remote.RegisterLoaderServer(gRPCServer, removeServer)
-	cmd.Println("Data extension is running at port", o.port)
-
-	go func() {
-		<-cmd.Context().Done()
-		gRPCServer.Stop()
+func (o *option) runE(c *cobra.Command, args []string) (err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			c.Println(r)
+		}
 	}()
 
-	err = gRPCServer.Serve(lis)
+	err = ext.CreateRunner(o.Extension, c, pkg.NewRemoteServer())
 	return
 }
 
 type option struct {
-	port int
+	*ext.Extension
 }
