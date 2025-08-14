@@ -18,6 +18,7 @@ package pkg
 import (
 	"context"
 
+	"github.com/linuxsuren/api-testing/pkg/version"
 	"github.com/linuxsuren/atest-ext-store-database/ui"
 
 	"github.com/linuxsuren/api-testing/pkg/server"
@@ -39,7 +40,7 @@ type UIExtension interface {
 	GetMenus(ctx context.Context, empty *server.Empty) (*server.MenuList, error)
 }
 
-func NewRemoteServer() (server RemoteServer, err error) {
+func NewRemoteServer() (server RemoteServer) {
 	server = &databaseExtension{}
 	return
 }
@@ -69,6 +70,14 @@ func (s *databaseExtension) GetPageOfCSS(ctx context.Context, in *server.SimpleN
 	reply = &server.CommonResult{
 		Success: true,
 		Message: ui.GetCSS(),
+	}
+	return
+}
+
+func (s *databaseExtension) Verify(ctx context.Context, in *server.Empty) (reply *server.ExtensionStatus, err error) {
+	reply = &server.ExtensionStatus{
+		Ready:   true,
+		Version: version.GetVersion(),
 	}
 	return
 }
