@@ -7,7 +7,7 @@ import type { Store } from './store'
 import { Driver, GetDriverName, ExtensionKind } from './store'
 import type { Pair } from './types'
 import { GetDataManagerPreference, SetDataManagerPreference } from './cache'
-import { ElMessage } from 'element-plus'
+import {ElMessage, type ElTree} from 'element-plus'
 import { Codemirror } from 'vue-codemirror'
 import { sql, StandardSQL, MySQL, PostgreSQL, Cassandra } from "@codemirror/lang-sql"
 import type { SQLConfig } from "@codemirror/lang-sql"
@@ -44,6 +44,7 @@ const largeContentDialogVisible = ref(false)
 interface TreeItem {
   label: string
 }
+const tablesTreeRef = ref<InstanceType<typeof ElTree>>()
 const tablesTree = ref([] as TreeItem[])
 const storeChangedEvent = (s: string) => {
   kind.value = ''
@@ -336,6 +337,19 @@ const executeQueryWithoutShowingNativeSQL = () => {
     executeWithQuery(sqlQuery.value)
 }
 
+const tableNameFilter = ref('')
+watch(tableNameFilter, (val: string) => {
+  tablesTreeRef.value!.filter(val)
+})
+const tableNameFilterFunc = (value: string, row: any) => {
+  let filter = ''
+  if (value && value.toLowerCase) {
+    filter = value.toLowerCase().trim()
+    return row.label.toLowerCase().indexOf(filter) != -1
+  }
+  return true
+}
+
 Magic.LoadMagicKeys('DataManager', new Map([
   ["executeQuery", executeQuery],
   ["executeWithSelectedQuery", executeWithSelectedQuery],
@@ -359,7 +373,9 @@ Magic.LoadMagicKeys('DataManager', new Map([
             <el-option v-for="item in queryDataMeta.databases" :key="item" :label="item"
                        :value="item"></el-option>
           </el-select>
+          <el-input v-model="tableNameFilter" :placeholder="t('tip.filter')" style="padding: 5px;" clearable />
           <el-tree :data="tablesTree" node-key="label" highlight-current
+                   :filter-node-method="tableNameFilterFunc" ref="tablesTreeRef"
                    draggable>
             <template #default="{node, data}">
               <div class="space-between">
