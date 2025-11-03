@@ -9,8 +9,11 @@ import type { Pair } from './types'
 import { GetDataManagerPreference, SetDataManagerPreference } from './cache'
 import {ElMessage, type ElTree} from 'element-plus'
 import { Codemirror } from 'vue-codemirror'
+import { standardKeymap } from "@codemirror/commands"
+import { keymap } from "@codemirror/view"
 import { sql, StandardSQL, MySQL, PostgreSQL, Cassandra } from "@codemirror/lang-sql"
 import type { SQLConfig } from "@codemirror/lang-sql"
+import { format } from 'sql-formatter';
 import HistoryInput from './HistoryInput.vue'
 import { Refresh, Document } from '@element-plus/icons-vue'
 import { Magic } from './magicKeys'
@@ -229,6 +232,13 @@ const ormDataHandler = (data: QueryData) => {
   })
 }
 
+const formatSQL = () => {
+  sqlQuery.value = format(sqlQuery.value, {
+    keywordCase: 'upper',
+    language: 'mysql'
+  })
+}
+
 const keyValueDataHandler = (data: QueryData) => {
   queryResult.value = []
   columns.value = ['key', 'value']
@@ -410,6 +420,7 @@ Magic.LoadMagicKeys('DataManager', new Map([
                           </el-col>
                           <el-col :span="2">
                               <el-form-item>
+                                  <el-button type="primary" @click="formatSQL" :disabled="kind === ''">Format</el-button>
                                   <el-button type="primary" @click="executeQuery" :disabled="kind === ''">Execute</el-button>
                               </el-form-item>
                           </el-col>
@@ -441,7 +452,7 @@ Magic.LoadMagicKeys('DataManager', new Map([
                       v-model="sqlQuery"
                       v-if="complexEditor"
                       style="height: var(--sql-editor-height);"
-                      :extensions="[sql(sqlConfig)]"
+                      :extensions="[sql(sqlConfig), keymap.of(standardKeymap)]"
                   />
               </el-splitter-panel>
               <el-splitter-panel v-if="store !== ''">
