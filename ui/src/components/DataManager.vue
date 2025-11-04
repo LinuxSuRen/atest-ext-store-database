@@ -332,6 +332,7 @@ watch(largeContent, (e) => {
 const sqlEditorReady = (editor: any) => {
   sqlEditorView.value = editor.view
 }
+const sqlEditorSize = ref('280px')
 
 const executeWithSelectedQuery = () => {
     const selectedTextObj = sqlEditorView.value.state.selection.main
@@ -400,7 +401,7 @@ Magic.LoadMagicKeys('DataManager', new Map([
       </el-aside>
       <el-container>
           <el-splitter layout="vertical">
-              <el-splitter-panel size="30%">
+              <el-splitter-panel v-model:size="sqlEditorSize">
                   <el-form @submit.prevent="executeQuery">
                       <el-row :gutter=10 justify="center" style="margin-left: 0!important; margin-right: 0!important;">
                           <el-col :span="4">
@@ -414,13 +415,13 @@ Magic.LoadMagicKeys('DataManager', new Map([
                               </el-form-item>
                           </el-col>
                           <el-col :span="16">
-                              <el-form-item v-if="!complexEditor">
-                                  <HistoryInput :placeholder="queryTip" :callback="executeQuery" v-model="sqlQuery" />
+                              <el-form-item>
+                                  <HistoryInput :placeholder="queryTip" :callback="executeQuery" v-model="sqlQuery" v-if="!complexEditor" />
+                                <el-button type="primary" @click="formatSQL" v-if="complexEditor">Format</el-button>
                               </el-form-item>
                           </el-col>
                           <el-col :span="2">
                               <el-form-item>
-                                  <el-button type="primary" @click="formatSQL" :disabled="kind === ''">Format</el-button>
                                   <el-button type="primary" @click="executeQuery" :disabled="kind === ''">Execute</el-button>
                               </el-form-item>
                           </el-col>
@@ -451,7 +452,7 @@ Magic.LoadMagicKeys('DataManager', new Map([
                       @ready="sqlEditorReady"
                       v-model="sqlQuery"
                       v-if="complexEditor"
-                      style="height: var(--sql-editor-height);"
+                      :style="{height: Number.isNaN(Number(sqlEditorSize)) ? sqlEditorSize : (Number(sqlEditorSize) - 50 + 'px')}"
                       :extensions="[sql(sqlConfig), keymap.of(standardKeymap)]"
                   />
               </el-splitter-panel>
