@@ -39,7 +39,8 @@ const showOverflowTooltip = ref(true)
 const complexEditor = ref(false)
 const sqlEditorView = ref(null as any)
 const dataFormat = ref('table')
-const dataFormatOptions = ['table', 'json']
+const dataFormatOptions = ['table', 'json', 'form']
+const dataShowAsFormIndex = ref(0)
 const queryDataMeta = ref({} as QueryDataMeta)
 const largeContent = ref('')
 const largeContentDialogVisible = ref(false)
@@ -120,10 +121,44 @@ interface QueryData {
   meta: QueryDataMeta
 }
 
+const rickColumns = ref(new Map<string, string>())
+const collectTableColumns = async (table: string) => {
+  let sql
+  switch (kind.value) {
+    case ExtensionKind.ExtensionKindCassandra:
+      sql = `@describeTable_${queryDataMeta.value.currentDatabase}:${table}`
+      break
+    default:
+      sql = `@describeTable_${table}`
+  }
+
+  const data = await API.DataQueryAsync({
+    sql: sql,
+    store: store.value,
+  } as QueryObject);
+  if (data.items.length > 0) {
+    data.items.forEach((e: any) => {
+      let field = ''
+      let comment = ''
+      e.data.forEach((item: Pair) => {
+        if (item.key === 'Field') {
+          field = item.value
+        } else if (item.key === 'Comment') {
+          comment = item.value
+        }
+      })
+
+      if (field !== '' && comment !== '') {
+        rickColumns.value.set(field, comment)
+      }
+    })
+  }
+}
 const queryDataFromTable = (data: QueryData) => {
   sqlQuery.value = `@selectTableLImit100_${data.label}`
   currentTable.value = data.label
   executeQuery()
+  collectTableColumns(data.label)
 }
 const describeTable = (data: QueryData) => {
   switch (kind.value) {
@@ -463,10 +498,28 @@ Magic.LoadMagicKeys('DataManager', new Map([
                       <el-tag type="primary" v-for="label in queryDataMeta.labels">{{ label.value }}</el-tag>
                       <el-check-tag type="primary" :checked="showOverflowTooltip" @change="overflowChange" v-if="queryResult.length > 0">overflow</el-check-tag>
                   </div>
-                  <el-table :data="queryResult" stripe v-if="dataFormat === 'table'" @cell-dblclick="tryShowPrettyJSON">
-                      <el-table-column v-for="col in columns" :key="col" :prop="col" :label="col" sortable :show-overflow-tooltip="showOverflowTooltip" />
+                  <Codemirror v-if="dataFormat === 'json'" v-model="queryResultAsJSON" />
+                  <div v-else-if="dataFormat === 'form' && queryResult.length > 0" style="padding-left: 10px; padding-right: 10px; display: flex;">
+                    <el-form label-width="auto" style="width: 100%">
+                      <el-row gutter="10" v-for="(row, index) in columns" :key="index">
+                        <el-col :span="12">
+                          <el-form-item :label="row">
+                            <el-input v-model="queryResult[dataShowAsFormIndex][row]" readonly />
+                          </el-form-item>
+                        </el-col>
+                        <el-col :span="12">
+                          <el-form-item>
+                            <el-text v-if="rickColumns.has(row)">{{ rickColumns.get(row) }}</el-text>
+                          </el-form-item>
+                        </el-col>
+                      </el-row>
+                    </el-form>
+                    <el-slider v-model="dataShowAsFormIndex" :min=0 :max="queryResult.length - 1" vertical height="300px"
+                               v-if="queryResult.length > 1" show-stops show-tooltip/>
+                  </div>
+                  <el-table :data="queryResult" stripe v-else @cell-dblclick="tryShowPrettyJSON">
+                    <el-table-column v-for="col in columns" :key="col" :prop="col" :label="col" sortable :show-overflow-tooltip="showOverflowTooltip" />
                   </el-table>
-                  <Codemirror v-else-if="dataFormat === 'json'" v-model="queryResultAsJSON" />
               </el-splitter-panel>
           </el-splitter>
       </el-container>
