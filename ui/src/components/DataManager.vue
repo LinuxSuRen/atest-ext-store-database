@@ -171,6 +171,7 @@ const describeTable = (data: QueryData) => {
   executeQuery()
 }
 const queryTables = () => {
+  sqlQuery.value = ``
   executeQuery()
 }
 watch(kind, (k) => {
