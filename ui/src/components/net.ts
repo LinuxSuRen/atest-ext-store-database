@@ -615,7 +615,7 @@ function GetStores(callback: (d: any) => void,
             'X-Auth': getToken()
         },
     }
-    fetch('/api/v1/stores', requestOptions)
+    fetch('/api/v1/stores?kind=database', requestOptions)
         .then(DefaultResponseProcess)
         .then(callback).catch(emptyOrDefault(errHandle)).finally(emptyOrDefault(final))
 }
